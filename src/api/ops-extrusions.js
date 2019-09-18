@@ -70,6 +70,8 @@ const extrude = function (cag, options) {
   let offsetVector = parseOptionAs3DVector(options, 'offset', [0, 0, 1])
   let twistangle = parseOptionAsFloat(options, 'twistangle', 0)
   let twiststeps = parseOptionAsInt(options, 'twiststeps', defaultResolution3D)
+  let top = options.top || cag;
+
   if (offsetVector.z === 0) {
     throw new Error('offset cannot be orthogonal to Z axis')
   }
@@ -85,7 +87,7 @@ const extrude = function (cag, options) {
     normalVector: normalVector,
     flipped: !(offsetVector.z < 0)}
   ))
-  polygons = polygons.concat(cag._toPlanePolygons({
+  polygons = polygons.concat(top._toPlanePolygons({
     translation: offsetVector,
     normalVector: normalVector.rotateZ(twistangle),
     flipped: offsetVector.z < 0}))
@@ -95,7 +97,8 @@ const extrude = function (cag, options) {
               normalVector.rotateZ(i * twistangle / twiststeps))
     let c2 = new Connector(offsetVector.times((i + 1) / twiststeps), [0, 0, offsetVector.z],
               normalVector.rotateZ((i + 1) * twistangle / twiststeps))
-    polygons = polygons.concat(cag._toWallPolygons({toConnector1: c1, toConnector2: c2}))
+              
+    polygons = polygons.concat(cag._toWallPolygons({toConnector1: c1, toConnector2: c2, top: top}))
   }
 
   return fromPolygons(polygons)
@@ -161,13 +164,14 @@ function linear_extrude (params, baseShape) {
     height: 1,
     slices: 10,
     twist: 0,
-    center: false
+    center: false,
+    top: baseShape
   }
   /* convexity = 10, */
-  const {height, twist, slices, center} = Object.assign({}, defaults, params)
+  const {height, twist, slices, center, top} = Object.assign({}, defaults, params)
 
   // if(params.convexity) convexity = params.convexity      // abandoned
-  let output = baseShape.extrude({offset: [0, 0, height], twistangle: twist, twiststeps: slices})
+  let output = baseShape.extrude({offset: [0, 0, height], twistangle: twist, twiststeps: slices, top: top})
   if (center === true) {
     const b = output.getBounds() // b[0] = min, b[1] = max
     const offset = (b[1].plus(b[0])).times(-0.5)
