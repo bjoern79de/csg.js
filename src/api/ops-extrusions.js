@@ -98,7 +98,7 @@ const extrude = function (cag, options) {
     let c2 = new Connector(offsetVector.times((i + 1) / twiststeps), [0, 0, offsetVector.z],
               normalVector.rotateZ((i + 1) * twistangle / twiststeps))
               
-    polygons = polygons.concat(cag._toWallPolygons({toConnector1: c1, toConnector2: c2, top: top}))
+    polygons = polygons.concat(cag._toWallPolygons({toConnector1: c1, toConnector2: c2, cag: top}))
   }
 
   return fromPolygons(polygons)
